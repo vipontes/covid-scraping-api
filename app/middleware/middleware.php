@@ -1,7 +1,7 @@
 <?php
 $middleware = function ($request, $response, $next) {
     $phpHeaders = getallheaders();
-    $apiKey = $phpHeaders['apiKey'];
+    $apiKey = $phpHeaders['token'];
     $status = 200;
     $result = array();
 

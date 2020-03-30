@@ -57,3 +57,59 @@ $app->post("/worldometers", function ($request, $response) {
         return $this->response->withJson($result, $status);
     }
 })->add($middleware);
+
+
+$app->post("/worldometers/country", function ($request, $response) {
+    require_once ('db/dbconnect.php');
+
+    $input = $request->getParsedBody();
+
+    $response = VerifyRequiredParameters(array('country'), $input);
+    if (isset($response['error'])) {
+        return $this->response->withJson($response, 404);
+    }
+
+    $country = $input['country'];
+
+    try {
+        $query = "SELECT
+        worldometers_id,
+        measurement_date,
+        country,
+        total_cases,
+        new_cases,
+        total_deaths,
+        new_deaths,
+        total_recovered,
+        active_cases,
+        serious_cases,
+        cases_per_million,
+        deaths_per_million
+        FROM worldometers
+        WHERE country = :country
+        ORDER BY worldometers_id DESC LIMIT 7";
+        $sth = $db->prepare($query);
+        $sth->execute(array(':country' => $country));
+        $data = $sth->fetchAll();
+        //
+        $status = 200;
+        $result = $data;
+        header('Content-Type: application/json');
+        return $this->response->withJson($result, $status);
+    } catch (PDOException $e) {
+        $status = 409;
+        $result = array();
+        $result["success"] = false;
+        $result["message"] = $e->getMessage();
+        header('Content-Type: application/json');
+        return $this->response->withJson($result, $status);
+    } catch (Exception $x) {
+        $status = 409;
+        $result = array();
+        $result["success"] = false;
+        $result["message"] = $x->getMessage();
+        header('Content-Type: application/json');
+        return $this->response->withJson($result, $status);
+    }
+})->add($middleware);
+
