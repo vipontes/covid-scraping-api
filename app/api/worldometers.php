@@ -29,10 +29,13 @@ $app->post("/worldometers", function ($request, $response) {
         active_cases,
         serious_cases,
         cases_per_million,
-        deaths_per_million
+        deaths_per_million,
+        total_tests,
+        tests_per_million,
+        population
         FROM worldometers
         WHERE measurement_date = :measurement_date
-        ORDER BY total_cases DESC";
+        ORDER BY total_deaths DESC";
         $sth = $db->prepare($query);
         $sth->execute(array(':measurement_date' => $selectedDate));
         $data = $sth->fetchAll();
@@ -84,10 +87,13 @@ $app->post("/worldometers/country", function ($request, $response) {
         active_cases,
         serious_cases,
         cases_per_million,
-        deaths_per_million
+        deaths_per_million,
+        total_tests,
+        tests_per_million,
+        population
         FROM worldometers
         WHERE country = :country
-        ORDER BY worldometers_id DESC LIMIT 7";
+        ORDER BY worldometers_id DESC LIMIT 30";
         $sth = $db->prepare($query);
         $sth->execute(array(':country' => $country));
         $data = $sth->fetchAll();
