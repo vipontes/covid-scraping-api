@@ -231,3 +231,39 @@ $app->get("/brasil/populacao", function ($request, $response) {
         return $this->response->withJson($result, $status);
     }
 })->add($middleware);
+
+/**
+ *
+ */
+$app->get("/brasil/obitos/diario", function ($request, $response) {
+    require_once ('db/dbconnect.php');
+
+    try {
+        $query = "SELECT data_medicao, SUM(novos_obitos)
+        FROM municipio_covid
+        GROUP BY data_medicao
+        ORDER BY data_medicao DESC LIMIT 30";
+        $sth = $db->prepare($query);
+        $sth->execute();
+        $data = $sth->fetch();
+        //
+        $status = 200;
+        $result = array_reverse($data);
+        header('Content-Type: application/json');
+        return $this->response->withJson($result, $status);
+    } catch (PDOException $e) {
+        $status = 409;
+        $result = array();
+        $result["success"] = false;
+        $result["message"] = $e->getMessage();
+        header('Content-Type: application/json');
+        return $this->response->withJson($result, $status);
+    } catch (Exception $x) {
+        $status = 409;
+        $result = array();
+        $result["success"] = false;
+        $result["message"] = $x->getMessage();
+        header('Content-Type: application/json');
+        return $this->response->withJson($result, $status);
+    }
+})->add($middleware);
