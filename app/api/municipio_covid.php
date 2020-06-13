@@ -29,6 +29,7 @@ $app->get("/brasil/cidades", function ($request, $response) {
         mc.obitos,
         mc.novos_casos,
         mc.casos_acumulado,
+        mc.novos_obitos,
         Mortalidade(mc.obitos, m.populacao) AS mortalidade,
         Letalidade(mc.obitos, mc.casos_acumulado) AS letalidade
         FROM municipio_covid mc
@@ -86,6 +87,7 @@ $app->get("/brasil/cidades/criticas", function ($request, $response) {
         mc.obitos,
         mc.novos_casos,
         mc.casos_acumulado,
+        mc.novos_obitos,
         Mortalidade(mc.obitos, m.populacao) AS mortalidade,
         Letalidade(mc.obitos, mc.casos_acumulado) AS letalidade
         FROM municipio_covid mc
@@ -143,6 +145,7 @@ $app->get("/brasil/cidades/controladas", function ($request, $response) {
         mc.obitos,
         mc.novos_casos,
         mc.casos_acumulado,
+        mc.novos_obitos,
         Mortalidade(mc.obitos, m.populacao) AS mortalidade,
         Letalidade(mc.obitos, mc.casos_acumulado) AS letalidade
         FROM municipio_covid mc
@@ -154,6 +157,56 @@ $app->get("/brasil/cidades/controladas", function ($request, $response) {
         $sth = $db->prepare($query);
         $sth->execute(array(':day' => $maxDate['ultima_medicao']));
         $data = $sth->fetchAll();
+        //
+        $status = 200;
+        $result = $data;
+        header('Content-Type: application/json');
+        return $this->response->withJson($result, $status);
+    } catch (PDOException $e) {
+        $status = 409;
+        $result = array();
+        $result["success"] = false;
+        $result["message"] = $e->getMessage();
+        header('Content-Type: application/json');
+        return $this->response->withJson($result, $status);
+    } catch (Exception $x) {
+        $status = 409;
+        $result = array();
+        $result["success"] = false;
+        $result["message"] = $x->getMessage();
+        header('Content-Type: application/json');
+        return $this->response->withJson($result, $status);
+    }
+})->add($middleware);
+
+/**
+ *
+ */
+$app->get("/brasil/populacao", function ($request, $response) {
+    require_once ('db/dbconnect.php');
+
+    try {
+        $query = "SELECT MAX(data_medicao) AS ultima_medicao FROM populacao_covid";
+        $sth = $db->prepare($query);
+        $sth->execute();
+        $maxDate = $sth->fetch();
+
+        $query = "SELECT
+        p.codigo_pais,
+        p.pais_nome,
+        p.populacao,
+        pc.obitos,
+        pc.novos_obitos,
+        pc.novos_casos,
+        pc.casos_acumulado,
+        pc.recuperados,
+        pc.acompanhamento
+        FROM populacao_covid pc
+        INNER JOIN populacao p ON p.codigo_pais = pc.codigo_pais
+        WHERE pc.data_medicao = :day AND p.codigo_pais = 55";
+        $sth = $db->prepare($query);
+        $sth->execute(array(':day' => $maxDate['ultima_medicao']));
+        $data = $sth->fetch();
         //
         $status = 200;
         $result = $data;
