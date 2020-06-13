@@ -201,7 +201,9 @@ $app->get("/brasil/populacao", function ($request, $response) {
         pc.novos_casos,
         pc.casos_acumulado,
         pc.recuperados,
-        pc.acompanhamento
+        pc.acompanhamento,
+        Mortalidade(pc.obitos, p.populacao) AS mortalidade,
+        Letalidade(pc.obitos, pc.casos_acumulado) AS letalidade
         FROM populacao_covid pc
         INNER JOIN populacao p ON p.codigo_pais = pc.codigo_pais
         WHERE pc.data_medicao = :day AND p.codigo_pais = 55";
