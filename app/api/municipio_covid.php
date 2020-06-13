@@ -239,13 +239,13 @@ $app->get("/brasil/obitos/diario", function ($request, $response) {
     require_once ('db/dbconnect.php');
 
     try {
-        $query = "SELECT data_medicao, SUM(novos_obitos)
+        $query = "SELECT data_medicao, SUM(novos_obitos) AS obitos
         FROM municipio_covid
         GROUP BY data_medicao
         ORDER BY data_medicao DESC LIMIT 30";
         $sth = $db->prepare($query);
         $sth->execute();
-        $data = $sth->fetch();
+        $data = $sth->fetchAll();
         //
         $status = 200;
         $result = array_reverse($data);
