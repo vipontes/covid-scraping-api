@@ -8,12 +8,15 @@
 /**
  * @brief
  */
-$app->get("/brasil/cidades/{data}", function ($request, $response) {
+$app->get("/brasil/cidades", function ($request, $response) {
     require_once ('db/dbconnect.php');
 
-    $day = $request->getAttribute('data');
-
     try {
+        $query = "SELECT MAX(data_medicao) AS ultima_medicao FROM municipio_covid";
+        $sth = $db->prepare($query);
+        $sth->execute();
+        $maxDate = $sth->fetch();
+
         $query = "SELECT
         mc.municipio_covid_id,
         mc.municipio_id,
@@ -26,8 +29,8 @@ $app->get("/brasil/cidades/{data}", function ($request, $response) {
         mc.obitos,
         mc.novos_casos,
         mc.casos_acumulado,
-        (mc.obitos / (m.populacao / 100000)) AS mortalidade,
-        (mc.obitos / casos_acumulado) * 100 AS letalidade
+        Mortalidade(mc.obitos, m.populacao) AS mortalidade,
+        Letalidade(mc.obitos, mc.casos_acumulado) AS letalidade
         FROM municipio_covid mc
         INNER JOIN municipio m ON m.municipio_id = mc.municipio_id
         INNER JOIN estado e ON m.estado_id = e.estado_id
@@ -35,7 +38,7 @@ $app->get("/brasil/cidades/{data}", function ($request, $response) {
         WHERE mc.data_medicao = :day
         ORDER BY obitos DESC";
         $sth = $db->prepare($query);
-        $sth->execute(array(':day' => $day));
+        $sth->execute(array(':day' => $maxDate['ultima_medicao']));
         $data = $sth->fetchAll();
         //
         $status = 200;
