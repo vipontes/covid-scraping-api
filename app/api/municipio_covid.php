@@ -195,6 +195,7 @@ $app->get("/brasil/populacao", function ($request, $response) {
         p.codigo_pais,
         p.pais_nome,
         p.populacao,
+        pc.data_medicao,
         pc.obitos,
         pc.novos_obitos,
         pc.novos_casos,
