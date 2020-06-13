@@ -267,3 +267,52 @@ $app->get("/brasil/obitos/diario", function ($request, $response) {
         return $this->response->withJson($result, $status);
     }
 })->add($middleware);
+
+/**
+ *
+ */
+$app->get("/brasil/estados", function ($request, $response) {
+    require_once ('db/dbconnect.php');
+
+    try {
+        $query = "SELECT MAX(data_medicao) AS ultima_medicao FROM municipio_covid";
+        $sth = $db->prepare($query);
+        $sth->execute();
+        $maxDate = $sth->fetch();
+
+        $query = "SELECT
+        e.estado_sigla,
+        mc.data_medicao,
+        SUM(mc.obitos) AS obitosEstado,
+        SUM(m.populacao) AS populacaoEstado,
+        Mortalidade(SUM(mc.obitos), SUM(m.populacao)) AS mortalidade
+        FROM municipio_covid mc
+        INNER JOIN municipio m ON m.municipio_id = mc.municipio_id
+        INNER JOIN estado e ON e.estado_id = m.estado_id
+        GROUP BY e.estado_sigla, mc.data_medicao
+        HAVING mc.data_medicao = :data_medicao
+        ORDER BY mortalidade DESC";
+        $sth = $db->prepare($query);
+        $sth->execute(array(':data_medicao' => $maxDate['ultima_medicao']));
+        $data = $sth->fetchAll();
+        //
+        $status = 200;
+        $result = $data;
+        header('Content-Type: application/json');
+        return $this->response->withJson($result, $status);
+    } catch (PDOException $e) {
+        $status = 409;
+        $result = array();
+        $result["success"] = false;
+        $result["message"] = $e->getMessage();
+        header('Content-Type: application/json');
+        return $this->response->withJson($result, $status);
+    } catch (Exception $x) {
+        $status = 409;
+        $result = array();
+        $result["success"] = false;
+        $result["message"] = $x->getMessage();
+        header('Content-Type: application/json');
+        return $this->response->withJson($result, $status);
+    }
+})->add($middleware);
