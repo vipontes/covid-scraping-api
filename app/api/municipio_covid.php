@@ -95,7 +95,7 @@ $app->get("/brasil/cidades/criticas", function ($request, $response) {
         INNER JOIN estado e ON m.estado_id = e.estado_id
         INNER JOIN regiao r ON r.regiao_id = e.regiao_id
         WHERE m.populacao >= 100000 AND mc.data_medicao = :day
-        ORDER BY obitos, casos_acumulado DESC LIMIT 10";
+        ORDER BY obitos DESC, casos_acumulado DESC LIMIT 10";
         $sth = $db->prepare($query);
         $sth->execute(array(':day' => $maxDate['ultima_medicao']));
         $data = $sth->fetchAll();
@@ -133,7 +133,7 @@ $app->get("/brasil/cidades/controladas", function ($request, $response) {
         $sth->execute();
         $maxDate = $sth->fetch();
 
-        $query = "SELECT * FROM (SELECT
+        $query = "SELECT
         mc.municipio_covid_id,
         mc.municipio_id,
         m.nome,
@@ -153,7 +153,7 @@ $app->get("/brasil/cidades/controladas", function ($request, $response) {
         INNER JOIN estado e ON m.estado_id = e.estado_id
         INNER JOIN regiao r ON r.regiao_id = e.regiao_id
         WHERE m.populacao >= 100000 AND mc.data_medicao = :day
-        ORDER BY obitos, casos_acumulado ASC LIMIT 10) Var1 ORDER BY obitos, casos_acumulado DESC";
+        ORDER BY obitos ASC, casos_acumulado ASC LIMIT 10";
         $sth = $db->prepare($query);
         $sth->execute(array(':day' => $maxDate['ultima_medicao']));
         $data = $sth->fetchAll();
