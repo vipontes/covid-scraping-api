@@ -95,7 +95,7 @@ $app->get("/brasil/cidades/criticas", function ($request, $response) {
         INNER JOIN estado e ON m.estado_id = e.estado_id
         INNER JOIN regiao r ON r.regiao_id = e.regiao_id
         WHERE m.populacao >= 100000 AND mc.data_medicao = :day
-        ORDER BY obitos DESC, populacao DESC LIMIT 10";
+        ORDER BY obitos, casos_acumulado DESC LIMIT 10";
         $sth = $db->prepare($query);
         $sth->execute(array(':day' => $maxDate['ultima_medicao']));
         $data = $sth->fetchAll();
@@ -133,7 +133,7 @@ $app->get("/brasil/cidades/controladas", function ($request, $response) {
         $sth->execute();
         $maxDate = $sth->fetch();
 
-        $query = "SELECT
+        $query = "SELECT * FROM (SELECT
         mc.municipio_covid_id,
         mc.municipio_id,
         m.nome,
@@ -153,7 +153,7 @@ $app->get("/brasil/cidades/controladas", function ($request, $response) {
         INNER JOIN estado e ON m.estado_id = e.estado_id
         INNER JOIN regiao r ON r.regiao_id = e.regiao_id
         WHERE m.populacao >= 100000 AND mc.data_medicao = :day
-        ORDER BY obitos ASC, populacao DESC LIMIT 10";
+        ORDER BY obitos, casos_acumulado ASC LIMIT 10) Var1 ORDER BY obitos, casos_acumulado DESC";
         $sth = $db->prepare($query);
         $sth->execute(array(':day' => $maxDate['ultima_medicao']));
         $data = $sth->fetchAll();
@@ -242,7 +242,7 @@ $app->get("/brasil/obitos/diario", function ($request, $response) {
         $query = "SELECT data_medicao, SUM(novos_obitos) AS obitos
         FROM municipio_covid
         GROUP BY data_medicao
-        ORDER BY data_medicao DESC LIMIT 30";
+        ORDER BY data_medicao DESC LIMIT 45";
         $sth = $db->prepare($query);
         $sth->execute();
         $data = $sth->fetchAll();
@@ -291,7 +291,7 @@ $app->get("/brasil/estados", function ($request, $response) {
         INNER JOIN estado e ON e.estado_id = m.estado_id
         GROUP BY e.estado_sigla, mc.data_medicao
         HAVING mc.data_medicao = :data_medicao
-        ORDER BY mortalidade DESC";
+        ORDER BY obitosEstado";
         $sth = $db->prepare($query);
         $sth->execute(array(':data_medicao' => $maxDate['ultima_medicao']));
         $data = $sth->fetchAll();
