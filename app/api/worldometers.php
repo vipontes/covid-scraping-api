@@ -32,7 +32,9 @@ $app->post("/worldometers", function ($request, $response) {
         deaths_per_million,
         total_tests,
         tests_per_million,
-        population
+        population,
+        Mortalidade(total_deaths, population) AS mortality,
+        Letalidade(total_deaths, total_cases) AS lethality
         FROM worldometers
         WHERE measurement_date = :measurement_date
         ORDER BY total_deaths DESC";
@@ -60,7 +62,6 @@ $app->post("/worldometers", function ($request, $response) {
         return $this->response->withJson($result, $status);
     }
 })->add($middleware);
-
 
 $app->post("/worldometers/country", function ($request, $response) {
     require_once ('db/dbconnect.php');
@@ -118,4 +119,3 @@ $app->post("/worldometers/country", function ($request, $response) {
         return $this->response->withJson($result, $status);
     }
 })->add($middleware);
-
