@@ -271,7 +271,7 @@ $app->get("/brasil/obitos/diario", function ($request, $response) {
 /**
  *
  */
-$app->get("/brasil/cidades/historico/{:municipioId}", function ($request, $response) {
+$app->get("/brasil/cidades/historico/{municipioId}", function ($request, $response) {
     require_once ('db/dbconnect.php');
 
     $municipioId = $request->getAttribute('municipioId');
