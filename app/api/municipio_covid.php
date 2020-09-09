@@ -8,6 +8,42 @@
 /**
  * @brief
  */
+$app->get("/brasil/lista/cidades", function ($request, $response) {
+    require_once ('db/dbconnect.php');
+
+    try {
+        $query = "SELECT m.municipio_id, m.nome, e.estado_sigla
+        FROM municipio m
+        INNER JOIN estado e ON m.estado_id = e.estado_id
+        ORDER BY nome";
+        $sth = $db->prepare($query);
+        $sth->execute();
+        $data = $sth->fetchAll();
+        //
+        $status = 200;
+        $result = $data;
+        header('Content-Type: application/json');
+        return $this->response->withJson($result, $status);
+    } catch (PDOException $e) {
+        $status = 409;
+        $result = array();
+        $result["success"] = false;
+        $result["message"] = $e->getMessage();
+        header('Content-Type: application/json');
+        return $this->response->withJson($result, $status);
+    } catch (Exception $x) {
+        $status = 409;
+        $result = array();
+        $result["success"] = false;
+        $result["message"] = $x->getMessage();
+        header('Content-Type: application/json');
+        return $this->response->withJson($result, $status);
+    }
+})->add($middleware);
+
+/**
+ * @brief
+ */
 $app->get("/brasil/cidades", function ($request, $response) {
     require_once ('db/dbconnect.php');
 
